@@ -4,9 +4,7 @@ import { Play, ChevronDown, LogOut, Sparkles, UserCheck } from 'lucide-react';
 export default function Header({ 
   title, 
   user, 
-  onLogoutClick, 
-  activePersonaId,
-  onChangePersona
+  onLogoutClick
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -36,27 +34,6 @@ export default function Header({
       </div>
 
       <div className="header-right">
-        {/* Quick Sandbox Persona Switcher in Header for convenience */}
-        <div className="sandbox-header-switcher">
-          <button 
-            className={`switch-badge-btn ${activePersonaId === 'u1' ? 'active-u1' : 'active-u2'}`}
-            onClick={onChangePersona}
-            title="Click to quickly switch sandbox personas"
-          >
-            {activePersonaId === 'u1' ? (
-              <>
-                <span className="dot dot-gray"></span>
-                <span>User: John (u1)</span>
-              </>
-            ) : (
-              <>
-                <span className="dot dot-purple"></span>
-                <span>User: Om (u2)</span>
-              </>
-            )}
-          </button>
-        </div>
-
         <button 
           onClick={() => alert("Launching Hintro interactive walk-through tutorial...")}
           className="btn-outline watch-tutorial-btn"
@@ -143,52 +120,7 @@ export default function Header({
           fill: currentColor;
         }
         
-        .sandbox-header-switcher {
-          margin-right: 4px;
-        }
-        
-        .switch-badge-btn {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          border-radius: 9999px;
-          font-size: 12px;
-          font-weight: 600;
-          border: 1px solid var(--color-border-dark);
-          background-color: #F8F9FA;
-          transition: all var(--transition-fast);
-        }
-        
-        .switch-badge-btn:hover {
-          transform: scale(1.02);
-          background-color: #E2E8F0;
-        }
-        
-        .active-u1 {
-          border-color: #CBD5E1;
-          color: #475569;
-        }
-        
-        .active-u2 {
-          border-color: #D6BCFA;
-          color: #6B46C1;
-          background-color: #FAF5FF;
-        }
-        
-        .dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-        }
-        
-        .dot-gray {
-          background-color: #64748B;
-        }
-        
-        .dot-purple {
-          background-color: #9F7AEA;
-        }
+
         
         .profile-dropdown-wrapper {
           position: relative;

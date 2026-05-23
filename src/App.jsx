@@ -7,7 +7,7 @@ import HowItWorks from './components/HowItWorks';
 import FeedbackModal from './components/FeedbackModal';
 import FeedbackHistory from './components/FeedbackHistory';
 import LogoutModal from './components/LogoutModal';
-import UserPersonaSelector from './components/UserPersonaSelector';
+import LoginPage from './components/LoginPage';
 
 import { 
   getProfile, 
@@ -166,7 +166,7 @@ export default function App() {
   };
 
   if (!activePersona) {
-    return <UserPersonaSelector onSelectPersona={(id) => {
+    return <LoginPage onLoginSuccess={(id) => {
       setActivePersona(id);
       setOnboardingMode(false);
       setActiveTab('dashboard');
@@ -203,8 +203,6 @@ export default function App() {
           }
           user={profile}
           onLogoutClick={() => setLogoutOpen(true)}
-          activePersonaId={activePersona}
-          onChangePersona={handleQuickPersonaSwap}
         />
 
         {/* Server Status Indicators */}
