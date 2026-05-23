@@ -22,6 +22,7 @@ export default function App() {
   const [activePersona, setActivePersona] = useState(null); // 'u1', 'u2' or null (selector page)
   const [activeTab, setActiveTab] = useState('dashboard');
   const [onboardingMode, setOnboardingMode] = useState(false); // u1 only toggle
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // API Data states
   const [profile, setProfile] = useState(null);
@@ -184,13 +185,35 @@ export default function App() {
           } else {
             setActiveTab(tab);
           }
+          setSidebarOpen(false); // Close sidebar drawer on mobile tap
         }}
         user={profile}
         usageData={dashboardData?.usage}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       {/* Main dashboard board */}
       <div className="main-content-panel">
+        {/* Mobile Top Status Bar Mockup */}
+        <div className="mobile-status-bar">
+          <span className="status-time">9:41</span>
+          <div className="status-icons">
+            <svg className="status-icon" width="17" height="11" viewBox="0 0 17 11" fill="currentColor">
+              <path d="M2 3h1v5H2V3zm3-2h1v7H5V1zm3 3h1v4H8V4zm3-3h1v7h-1V1zm3 4h1v3h-1V5z"/>
+            </svg>
+            <svg className="status-icon" width="15" height="11" viewBox="0 0 15 11" fill="currentColor">
+              <path d="M13.78 2.5C12.22 1.34 9.94.5 7.5.5c-2.44 0-4.72.84-6.28 2L0 3.78C1.84 2.19 4.5 1.25 7.5 1.25c3 0 5.66.94 7.5 2.53l-.72-1.28z"/>
+            </svg>
+            <div className="status-battery">
+              <div className="battery-body">
+                <div className="battery-level"></div>
+              </div>
+              <div className="battery-cap"></div>
+            </div>
+          </div>
+        </div>
+
         <Header 
           title={
             activeTab === 'dashboard' ? 'Dashboard' :
@@ -203,6 +226,7 @@ export default function App() {
           }
           user={profile}
           onLogoutClick={() => setLogoutOpen(true)}
+          onMenuClick={() => setSidebarOpen(true)}
         />
 
         {/* Server Status Indicators */}
@@ -243,7 +267,8 @@ export default function App() {
                         onClick={() => alert("Setting up a new AI Call Session...")} 
                         className="btn-primary start-new-call-btn"
                       >
-                        Start New Call
+                        <span className="desktop-btn-text">Start New Call</span>
+                        <span className="mobile-btn-text">Start Call</span>
                       </button>
                     </div>
                   </div>
@@ -557,6 +582,134 @@ export default function App() {
         .upgrade-now-btn {
           background-color: #000000;
           border-radius: 10px;
+        }
+        
+        /* Mobile Specific Layout & Bezel Adaptations */
+        .mobile-status-bar {
+          display: none;
+        }
+        
+        .mobile-btn-text {
+          display: none;
+        }
+        
+        @media (max-width: 768px) {
+          .hintro-app-layout {
+            flex-direction: column;
+          }
+          
+          .mobile-status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 24px 2px 24px;
+            background-color: #FFFFFF;
+            width: 100%;
+            height: 28px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #000000;
+            user-select: none;
+            border-bottom: none;
+            position: sticky;
+            top: 0;
+            z-index: 11; /* One above the header so it sits on top */
+          }
+          
+          .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+          
+          .status-icon {
+            opacity: 0.85;
+          }
+          
+          .status-battery {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+          }
+          
+          .battery-body {
+            width: 20px;
+            height: 10px;
+            border: 1px solid currentColor;
+            border-radius: 3px;
+            padding: 1px;
+            display: flex;
+          }
+          
+          .battery-level {
+            flex-grow: 1;
+            background-color: currentColor;
+            border-radius: 1px;
+          }
+          
+          .battery-cap {
+            width: 1px;
+            height: 4px;
+            background-color: currentColor;
+            border-radius: 0 1px 1px 0;
+          }
+          
+          .main-content-panel {
+            width: 100%;
+            min-height: 100vh;
+          }
+          
+          .dashboard-content-area {
+            padding: 24px 16px;
+            max-height: none;
+            overflow-y: visible;
+          }
+          
+          .dashboard-hero-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+          }
+          
+          .hero-left h2 {
+            font-size: 20px;
+          }
+          
+          .hero-left p {
+            font-size: 13px;
+          }
+          
+          .hero-actions-row {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          
+          .start-new-call-btn {
+            width: fit-content;
+            height: 38px;
+            font-size: 13.5px;
+            padding: 8px 18px;
+            border-radius: 8px;
+          }
+          
+          .onboarding-toggle-btn {
+            width: fit-content;
+            height: 38px;
+            font-size: 13.5px;
+            padding: 8px 18px;
+            border-radius: 8px;
+          }
+          
+          .desktop-btn-text {
+            display: none;
+          }
+          
+          .mobile-btn-text {
+            display: inline;
+          }
         }
       `}</style>
     </div>

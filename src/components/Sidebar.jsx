@@ -7,14 +7,17 @@ import {
   LifeBuoy, 
   Inbox, 
   Gift, 
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
 
 export default function Sidebar({ 
   activeTab, 
   setActiveTab,
   user,
-  usageData
+  usageData,
+  isOpen,
+  onClose
 }) {
   const used = usageData?.kb_files?.used ?? 0;
   const limit = usageData?.kb_files?.limit ?? 100;
@@ -29,11 +32,24 @@ export default function Sidebar({
   ];
 
   return (
-    <aside className="hintro-sidebar animate-fade">
-      {/* Centered Logo Block with Horizontal Border-Bottom */}
-      <div className="sidebar-brand">
-        <span className="brand-text">Hintro</span>
-      </div>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isOpen && (
+        <div className="sidebar-mobile-backdrop" onClick={onClose}></div>
+      )}
+      
+      <aside className={`hintro-sidebar ${isOpen ? 'mobile-drawer-open' : ''} animate-fade`}>
+        {/* Mobile Close Button Header */}
+        <div className="mobile-close-header">
+          <button onClick={onClose} className="mobile-close-btn" aria-label="Close menu">
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* Centered Logo Block with Horizontal Border-Bottom */}
+        <div className="sidebar-brand">
+          <span className="brand-text">Hintro</span>
+        </div>
 
       <nav className="sidebar-nav">
         <ul className="menu-list">
@@ -127,6 +143,57 @@ export default function Sidebar({
           top: 0;
         }
         
+        @media (max-width: 768px) {
+          .hintro-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            width: 280px;
+            box-shadow: 20px 0 40px rgba(0,0,0,0.1);
+          }
+          
+          .hintro-sidebar.mobile-drawer-open {
+            transform: translateX(0);
+          }
+          
+          .sidebar-mobile-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            animation: fadeIn 0.2s ease-out;
+          }
+          
+          .mobile-close-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            width: 100%;
+          }
+          
+          .mobile-close-btn {
+            color: #4B5563;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+          }
+        }
+        
+        @media (min-width: 769px) {
+          .mobile-close-header {
+            display: none;
+          }
+        }
+        
         .sidebar-brand {
           height: 80px;
           display: flex;
@@ -135,6 +202,12 @@ export default function Sidebar({
           border-bottom: 1.5px solid var(--color-border);
           width: 100%;
           margin-bottom: 24px;
+        }
+        
+        @media (max-width: 768px) {
+          .sidebar-brand {
+            display: none; /* Hide Hintro logo brand header inside mobile drawer menu matching screenshot */
+          }
         }
         
         .brand-text {
@@ -282,5 +355,6 @@ export default function Sidebar({
         }
       `}</style>
     </aside>
+    </>
   );
 }

@@ -88,9 +88,27 @@ export default function StatsGrid({ stats }) {
           }
         }
         
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
           .stats-grid-container {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+          }
+          .stat-card {
+            padding: 16px;
+            gap: 12px;
+            border-radius: 12px;
+          }
+          .icon-wrapper {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+          }
+          .stat-value {
+            font-size: 15px;
+          }
+          .stat-label {
+            font-size: 11.5px;
           }
         }
         

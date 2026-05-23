@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, ChevronDown, LogOut, Sparkles, UserCheck } from 'lucide-react';
+import { Play, ChevronDown, LogOut, Menu } from 'lucide-react';
 
 export default function Header({ 
   title, 
   user, 
-  onLogoutClick
+  onLogoutClick,
+  onMenuClick
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -29,9 +30,15 @@ export default function Header({
 
   return (
     <header className="hintro-header animate-fade">
-      <div className="header-left">
-        <h2 className="page-title">{title}</h2>
-      </div>
+      <button 
+        onClick={onMenuClick}
+        className="mobile-menu-trigger-btn"
+        aria-label="Open menu"
+      >
+        <Menu size={24} />
+      </button>
+
+      <h2 className="page-title">{title}</h2>
 
       <div className="header-right">
         <button 
@@ -91,6 +98,18 @@ export default function Header({
           z-index: 10;
         }
         
+        @media (max-width: 768px) {
+          .hintro-header {
+            height: 60px;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 40px 1fr 40px;
+            align-items: center;
+            justify-items: center;
+            top: 28px; /* Offset exactly by the status bar height so it never overlaps */
+          }
+        }
+        
         .page-title {
           font-family: var(--font-heading);
           font-weight: 600;
@@ -99,10 +118,32 @@ export default function Header({
           letter-spacing: -0.5px;
         }
         
+        @media (max-width: 768px) {
+          .page-title {
+            grid-column: 2; /* Center column */
+            text-align: center;
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0;
+            width: 100%;
+          }
+        }
+        
         .header-right {
           display: flex;
           align-items: center;
           gap: 16px;
+        }
+        
+        @media (max-width: 768px) {
+          .header-right {
+            grid-column: 3; /* Right column */
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+            gap: 0;
+          }
         }
         
         .watch-tutorial-btn {
@@ -114,6 +155,12 @@ export default function Header({
           color: #000000;
           border: 1px solid #1A1A1A;
           gap: 6px;
+        }
+        
+        @media (max-width: 768px) {
+          .watch-tutorial-btn {
+            display: none; /* Hide watch tutorial button on mobile matching screenshot */
+          }
         }
         
         .play-icon-fill {
@@ -142,13 +189,43 @@ export default function Header({
           border: 1.5px solid var(--color-border-dark);
         }
         
+        @media (max-width: 768px) {
+          .profile-avatar-img {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--color-border-dark);
+          }
+        }
+        
         .chevron-icon {
           color: #7A7A7A;
           transition: transform var(--transition-fast);
         }
         
+        @media (max-width: 768px) {
+          .chevron-icon {
+            display: none; /* Hide chevron on mobile matching screenshot */
+          }
+        }
+        
         .chevron-icon.rotate {
           transform: rotate(180deg);
+        }
+        
+        .mobile-menu-trigger-btn {
+          display: none;
+        }
+        
+        @media (max-width: 768px) {
+          .mobile-menu-trigger-btn {
+            grid-column: 1; /* Left column */
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            color: #000000;
+            padding: 8px;
+            width: 100%;
+          }
         }
         
         .dropdown-menu-card {
