@@ -1,15 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, MessageSquarePlus, Clock, ShieldAlert, Sparkles } from 'lucide-react';
-import { formatLastSession } from '../utils/formatters';
+import { MessageSquarePlus, Clock } from 'lucide-react';
 
 export default function FeedbackHistory({ onOpenFeedbackForm }) {
   const [feedbacks, setFeedbacks] = useState([]);
 
-  // Load feedbacks on mount
+  // Default entries from the Figma screenshot to pre-populate LocalStorage on first launch!
+  const defaultFeedbacks = [
+    {
+      id: "fb_default_2",
+      rating: 4,
+      ratingText: "4/5",
+      title: "My First Call",
+      description: "The boxy features worked perfectly and the summary was extremely high quality.",
+      displayDescription: "- The boxy feature...",
+      dateStr: "11th May 2026",
+      timeStr: "5:00 pm",
+      createdAt: "2026-05-11T17:00:00.000Z"
+    },
+    {
+      id: "fb_default_1",
+      rating: 2,
+      ratingText: "2/5",
+      title: "My First Call",
+      description: "Had issues with audio syncing during the call and transcripts were laggy.",
+      displayDescription: "- Had issues with...",
+      dateStr: "10th May 2026",
+      timeStr: "5:00 pm",
+      createdAt: "2026-05-10T17:00:00.000Z"
+    }
+  ];
+
+  // Helper: Format date to ordinal format (e.g. "23rd May 2026")
+  const getOrdinalDateString = (dateVal) => {
+    const date = new Date(dateVal);
+    if (isNaN(date.getTime())) return '';
+    
+    const day = date.getDate();
+    const monthFullNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    const month = monthFullNames[date.getMonth()];
+    const year = date.getFullYear();
+    
+    const getSuffix = (n) => {
+      if (n > 3 && n < 21) return 'th';
+      switch (n % 10) {
+        case 1:  return "st";
+        case 2:  return "nd";
+        case 3:  return "rd";
+        default: return "th";
+      }
+    };
+    
+    return `${day}${getSuffix(day)} ${month} ${year}`;
+  };
+
+  // Helper: Format time to clock format (e.g. "5:00 pm")
+  const getTimeString = (dateVal) => {
+    const date = new Date(dateVal);
+    if (isNaN(date.getTime())) return '';
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    const minStr = minutes < 10 ? '0' + minutes : minutes;
+    
+    return `${hours}:${minStr} ${ampm}`;
+  };
+
+  // Load feedbacks
   const loadFeedbacks = () => {
     try {
-      const data = JSON.parse(localStorage.getItem('hintro_feedbacks') || '[]');
-      setFeedbacks(data);
+      const stored = localStorage.getItem('hintro_feedbacks');
+      if (!stored) {
+        // First load pre-population with figma default items!
+        localStorage.setItem('hintro_feedbacks', JSON.stringify(defaultFeedbacks));
+        setFeedbacks(defaultFeedbacks);
+      } else {
+        const parsed = JSON.parse(stored);
+        
+        // Map any dynamic entries with custom formatted times/dates for display
+        const mapped = parsed.map(item => {
+          if (!item.dateStr) {
+            return {
+              ...item,
+              ratingText: `${item.rating}/5`,
+              title: item.title || "My First Call",
+              displayDescription: `- ${item.description}`,
+              dateStr: getOrdinalDateString(item.createdAt),
+              timeStr: getTimeString(item.createdAt)
+            };
+          }
+          return item;
+        });
+        
+        setFeedbacks(mapped);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -18,322 +108,237 @@ export default function FeedbackHistory({ onOpenFeedbackForm }) {
   useEffect(() => {
     loadFeedbacks();
     
-    // Add window listener to reload when feedbacks are submitted in modal
     window.addEventListener('feedbackSubmitted', loadFeedbacks);
     return () => window.removeEventListener('feedbackSubmitted', loadFeedbacks);
   }, []);
 
-  const deleteSingleFeedback = (id) => {
-    if (!window.confirm("Are you sure you want to delete this feedback log?")) return;
-    const updated = feedbacks.filter(f => f.id !== id);
-    localStorage.setItem('hintro_feedbacks', JSON.stringify(updated));
-    setFeedbacks(updated);
-  };
-
   const clearAllFeedbacks = () => {
-    if (!window.confirm("Are you sure you want to permanently clear all feedback history?")) return;
-    localStorage.removeItem('hintro_feedbacks');
+    if (!window.confirm("Are you sure you want to permanently clear feedback history?")) return;
+    localStorage.setItem('hintro_feedbacks', JSON.stringify([]));
     setFeedbacks([]);
-  };
-
-  const getCategoryBadgeClass = (cat) => {
-    switch (cat) {
-      case 'bug': return 'cat-bug';
-      case 'feature': return 'cat-feature';
-      case 'ui_ux': return 'cat-ui';
-      default: return 'cat-general';
-    }
-  };
-
-  const getCategoryLabel = (cat) => {
-    switch (cat) {
-      case 'bug': return 'Bug Report';
-      case 'feature': return 'Feature Request';
-      case 'ui_ux': return 'UI / UX';
-      default: return 'General Feedback';
-    }
   };
 
   return (
     <div className="feedback-history-container animate-fade">
-      <div className="history-header-row">
-        <div className="history-title-block">
-          <h3>Feedback History Logs</h3>
-          <p>These entries are stored locally inside the browser's <code>localStorage</code> database.</p>
-        </div>
+      {/* Centered Subtitle Section */}
+      <div className="history-subtitle-row">
+        <span className="history-sub-text">Browse your previous feedback submissions</span>
+      </div>
+
+      {/* Structured Table Card Wrapper (Always visible matching empty state screenshot exactly!) */}
+      <div className="table-card-wrapper">
+        <table className="feedback-history-table">
+          <thead>
+            <tr>
+              <th style={{ width: '22%' }}>Title</th>
+              <th style={{ width: '15%' }}>Rating</th>
+              <th style={{ width: '38%' }}>Description</th>
+              <th style={{ width: '15%' }}>Date</th>
+              <th style={{ width: '10%' }}>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {feedbacks.length === 0 ? (
+              /* Custom Empty State inside Table Wrapper cells */
+              <tr>
+                <td colSpan="5" className="empty-table-row-cell">
+                  <div className="empty-table-content">
+                    <h4 className="empty-table-title">No feedbacks yet</h4>
+                    <button onClick={onOpenFeedbackForm} className="give-fb-empty-btn">
+                      Give Feedback
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              feedbacks.map((item) => (
+                <tr key={item.id} className="table-data-row">
+                  <td className="col-title">My first call </td>
+                  <td className="col-rating">{item.ratingText || `${item.rating}/5`}</td>
+                  <td className="col-desc">
+                    <div className="desc-text-wrapper" title={item.description}>
+                      {item.displayDescription || `- ${item.description}`}
+                    </div>
+                  </td>
+                  <td className="col-date">{item.dateStr || getOrdinalDateString(item.createdAt)}</td>
+                  <td className="col-time">{item.timeStr || getTimeString(item.createdAt)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
         
         {feedbacks.length > 0 && (
-          <button onClick={clearAllFeedbacks} className="btn-outline clear-all-btn">
-            <Trash2 size={14} />
-            <span>Clear History</span>
-          </button>
+          <div className="table-footer-actions">
+            <button onClick={clearAllFeedbacks} className="clear-history-btn">
+              Clear All Entries
+            </button>
+          </div>
         )}
       </div>
 
-      {feedbacks.length === 0 ? (
-        /* Empty feedback state */
-        <div className="empty-history-card">
-          <div className="empty-icon-bubble">
-            <MessageSquarePlus size={26} className="bubble-icon-purple" />
-          </div>
-          <h4>No Feedback Submitted Yet</h4>
-          <p className="empty-desc">
-            Your submitted feedback logs will be tracked and displayed here.<br />
-            Take a moment to share your feature suggestions or report UI glitches.
-          </p>
-          <button onClick={onOpenFeedbackForm} className="btn-primary write-fb-btn">
-            <MessageSquarePlus size={16} />
-            <span>Give Feedback</span>
-          </button>
-        </div>
-      ) : (
-        /* List of feedback logs */
-        <div className="feedback-logs-list">
-          {feedbacks.map((item) => (
-            <div key={item.id} className="feedback-log-card animate-slide">
-              <div className="log-card-left">
-                <span className="log-emoji">{item.ratingEmoji || '😐'}</span>
-                
-                <div className="log-details-block">
-                  <div className="log-meta-row">
-                    <span className={`category-pill ${getCategoryBadgeClass(item.category)}`}>
-                      {getCategoryLabel(item.category)}
-                    </span>
-                    
-                    <span className="log-timestamp">
-                      <Clock size={12} />
-                      <span>{formatLastSession(item.createdAt)}</span>
-                    </span>
-
-                    {item.isAnonymous && (
-                      <span className="anon-tag">Anonymous</span>
-                    )}
-                  </div>
-                  
-                  <h4 className="log-title">{item.title}</h4>
-                  <p className="log-desc">{item.description}</p>
-                </div>
-              </div>
-
-              <div className="log-card-right">
-                <button 
-                  onClick={() => deleteSingleFeedback(item.id)}
-                  className="delete-log-btn"
-                  title="Delete feedback entry"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       <style>{`
         .feedback-history-container {
-          max-width: 840px;
+          max-width: 900px;
           margin: 0 auto;
+          width: 100%;
+          padding-top: 12px;
+        }
+        
+        .history-subtitle-row {
+          text-align: left;
+          margin-bottom: 28px;
+          padding-left: 4px;
+        }
+        
+        .history-sub-text {
+          font-size: 13.5px;
+          color: #8E8E8E; /* Neutral light gray matching Hintro specs exactly */
+          font-weight: 500;
+        }
+        
+        /* Structured Table Card Wrapper */
+        .table-card-wrapper {
+          background-color: #FFFFFF;
+          border: 1.5px solid #F3F4F6;
+          border-radius: 12px; /* Smooth rounded corners matching screenshot exactly */
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
           width: 100%;
         }
         
-        .history-header-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 32px;
-          border-bottom: 1.5px solid var(--color-border);
-          padding-bottom: 20px;
+        .feedback-history-table {
+          width: 100%;
+          border-collapse: collapse;
+          text-align: left;
         }
         
-        .history-title-block h3 {
-          font-family: var(--font-heading);
-          font-size: 20px;
-          font-weight: 700;
-          color: #000000;
+        .feedback-history-table thead {
+          background-color: #F8F9FC; /* Light gray-purple tint heading matching screenshot */
+          border-bottom: 1.5px solid #F3F4F6;
         }
         
-        .history-title-block p {
+        .feedback-history-table th {
+          font-family: var(--font-sans);
           font-size: 13px;
-          color: var(--color-text-secondary);
-          margin-top: 4px;
+          color: #8E8E8E; /* Small gray headers matching screenshot */
+          font-weight: 500;
+          padding: 16px 24px;
         }
         
-        .clear-all-btn {
-          color: var(--color-danger);
-          border-color: var(--color-danger-light);
-          padding: 8px 14px;
-          font-size: 12.5px;
-          font-weight: 600;
-          gap: 6px;
+        .table-data-row {
+          border-bottom: 1.5px solid #F3F4F6;
+          transition: background-color 0.15s ease;
         }
         
-        .clear-all-btn:hover {
-          background-color: var(--color-danger-light);
-          border-color: var(--color-danger);
+        .table-data-row:last-child {
+          border-bottom: none;
         }
         
-        /* Empty State */
-        .empty-history-card {
+        .table-data-row:hover {
+          background-color: #FAFAFA;
+        }
+        
+        .feedback-history-table td {
+          font-size: 14.5px;
+          color: #1F2937;
+          padding: 18px 24px;
+          vertical-align: middle;
+        }
+        
+        .col-title {
+          font-weight: 700; /* Bold Title matching screenshot */
+          color: #000000 !important;
+        }
+        
+        .col-rating {
+          font-weight: 500;
+          color: #1F2937;
+        }
+        
+        .col-desc {
+          color: #1F2937;
+        }
+        
+        .desc-text-wrapper {
+          max-width: 280px;
+          overflow: hidden;
+          text-overflow: ellipsis; /* Truncates long lines exactly like figma photo */
+          white-space: nowrap;
+          font-weight: 500;
+        }
+        
+        .col-date {
+          color: #1F2937;
+          font-weight: 500;
+        }
+        
+        .col-time {
+          color: #1F2937;
+          font-weight: 500;
+        }
+        
+        /* Centered Empty State row cell inside Table */
+        .empty-table-row-cell {
+          padding: 80px 24px !important;
+          text-align: center;
           background-color: #FFFFFF;
-          border: 1px solid var(--color-border-dark);
-          border-radius: 20px;
-          padding: 64px 32px;
+        }
+        
+        .empty-table-content {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          text-align: center;
-          box-shadow: var(--shadow-sm);
-        }
-        
-        .empty-icon-bubble {
-          width: 52px;
-          height: 52px;
-          border-radius: 12px;
-          background-color: var(--color-accent-purple-light);
-          display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 16px;
-        }
-        
-        .bubble-icon-purple {
-          color: var(--color-accent-purple);
-        }
-        
-        .empty-history-card h4 {
-          font-family: var(--font-heading);
-          font-size: 16px;
-          font-weight: 700;
-          color: #000000;
-          margin-bottom: 8px;
-        }
-        
-        .empty-history-card p {
-          font-size: 13px;
-          color: var(--color-text-secondary);
-          line-height: 1.5;
-          margin-bottom: 24px;
-        }
-        
-        .write-fb-btn {
-          background-color: #000000;
-          border-radius: 8px;
-          font-size: 13px;
-          padding: 10px 20px;
-        }
-        
-        /* Log Cards list */
-        .feedback-logs-list {
-          display: flex;
-          flex-direction: column;
           gap: 16px;
         }
         
-        .feedback-log-card {
-          background-color: #FFFFFF;
-          border: 1px solid var(--color-border-dark);
-          border-radius: 16px;
-          padding: 20px;
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          box-shadow: var(--shadow-sm);
-        }
-        
-        .log-card-left {
-          display: flex;
-          align-items: flex-start;
-          gap: 20px;
-        }
-        
-        .log-emoji {
-          font-size: 28px;
-          line-height: 1;
-        }
-        
-        .log-details-block {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        
-        .log-meta-row {
-          display: flex;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-        
-        .category-pill {
-          font-size: 11px;
-          font-weight: 600;
-          padding: 3px 10px;
-          border-radius: 9999px;
-        }
-        
-        .cat-bug {
-          background-color: #FEF2F2;
-          color: #EF4444;
-        }
-        
-        .cat-feature {
-          background-color: #ECFDF5;
-          color: #10B981;
-        }
-        
-        .cat-ui {
-          background-color: #EFF6FF;
-          color: #3B82F6;
-        }
-        
-        .cat-general {
-          background-color: #F3F4F6;
-          color: #4B5563;
-        }
-        
-        .log-timestamp {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 11.5px;
-          color: var(--color-text-secondary);
-        }
-        
-        .anon-tag {
-          font-size: 10.5px;
-          background-color: #FFFBEB;
-          color: #D97706;
-          border: 1px solid #FDE68A;
-          padding: 1px 6px;
-          border-radius: 4px;
-          font-weight: 600;
-        }
-        
-        .log-title {
-          font-family: var(--font-heading);
+        .empty-table-title {
+          font-family: var(--font-sans);
           font-size: 15px;
           font-weight: 700;
           color: #000000;
-          margin-top: 4px;
         }
         
-        .log-desc {
+        .give-fb-empty-btn {
+          border: 1px solid #D1D5DB;
+          color: #111827;
+          background-color: #FFFFFF;
+          padding: 8px 18px;
           font-size: 13px;
-          color: var(--color-text-secondary);
-          line-height: 1.5;
+          font-weight: 600;
+          border-radius: 6px;
+          box-shadow: none;
+          height: auto;
+          width: auto;
+          display: inline-flex;
+          align-items: center;
+          transition: all 0.2s;
         }
         
-        .delete-log-btn {
-          color: var(--color-text-secondary);
-          opacity: 0.5;
-          padding: 8px;
-          border-radius: 8px;
+        .give-fb-empty-btn:hover {
+          background-color: #F9FAFB;
+          border-color: #9CA3AF;
         }
         
-        .delete-log-btn:hover {
-          background-color: var(--color-danger-light);
-          color: var(--color-danger);
-          opacity: 1;
+        /* Table Actions footer */
+        .table-footer-actions {
+          background-color: #FAFAFA;
+          border-top: 1.5px solid #F3F4F6;
+          padding: 12px 24px;
+          display: flex;
+          justify-content: flex-end;
+        }
+        
+        .clear-history-btn {
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #EF4444;
+          transition: opacity 0.2s;
+        }
+        
+        .clear-history-btn:hover {
+          opacity: 0.8;
         }
       `}</style>
     </div>

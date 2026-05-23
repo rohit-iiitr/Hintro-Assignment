@@ -102,11 +102,13 @@ export default function FeedbackModal({ isOpen, onClose, onSubmitSuccess }) {
             {/* Expandable comments section (shows up beautifully once a star is tapped!) */}
             {rating > 0 && (
               <div className="expandable-comment-section animate-slide">
+                <label className="comment-label">
+                  {rating <= 3 ? "What frustrated you or felt confusing?" : "What did you like the most?"}
+                </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Share a few more details about your experience (optional)..."
-                  rows={3}
+                  rows={4}
                   className="feedback-textarea-input"
                 ></textarea>
               </div>
@@ -129,13 +131,15 @@ export default function FeedbackModal({ isOpen, onClose, onSubmitSuccess }) {
             </div>
           </form>
         ) : (
-          /* Submission Success Card */
-          <div className="success-onboarding-animation">
+          /* Submission Success Card (Acknowledgement matching screenshot) */
+          <div className="success-onboarding-animation animate-fade">
             <div className="success-icon-circle animate-scale">
-              <ThumbsUp size={36} />
+              <Star size={36} fill="#F59E0B" className="success-star-icon" />
             </div>
-            <h4>Thank You!</h4>
-            <p>Your feedback has been saved securely to LocalStorage and transmitted to the team.</p>
+            <h4>Thank you for your feedback!!</h4>
+            <p className="success-desc">
+              Our team reviews every suggestion to improve AI responses, workflows, and overall experience.
+            </p>
           </div>
         )}
       </div>
@@ -237,6 +241,17 @@ export default function FeedbackModal({ isOpen, onClose, onSubmitSuccess }) {
         .expandable-comment-section {
           margin-bottom: 28px;
           width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        
+        .comment-label {
+          font-size: 13px;
+          color: #374151;
+          font-weight: 500;
+          text-align: left;
         }
         
         .feedback-textarea-input {
@@ -320,34 +335,41 @@ export default function FeedbackModal({ isOpen, onClose, onSubmitSuccess }) {
           align-items: center;
           justify-content: center;
           text-align: center;
-          padding: 40px 0;
+          padding: 48px 0;
         }
         
         .success-icon-circle {
-          width: 72px;
-          height: 72px;
+          width: 84px;
+          height: 84px;
           border-radius: 50%;
-          background-color: var(--color-success-light);
-          color: var(--color-success);
+          background-color: #FEF3C7; /* Soft yellow circle background */
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
+          box-shadow: 0 4px 10px rgba(245, 158, 11, 0.08);
+        }
+        
+        .success-star-icon {
+          color: #F59E0B; /* Golden yellow star fill & border */
         }
         
         .success-onboarding-animation h4 {
-          font-family: var(--font-heading);
+          font-family: var(--font-sans);
           font-size: 22px;
           font-weight: 700;
-          margin-bottom: 8px;
+          margin-bottom: 12px;
           color: #000000;
+          letter-spacing: -0.5px;
         }
         
-        .success-onboarding-animation p {
-          font-size: 13.5px;
-          color: var(--color-text-secondary);
+        .success-desc {
+          font-size: 14px;
+          color: #6B7280; /* Neutral light-gray text */
           line-height: 1.5;
-          max-width: 320px;
+          max-width: 440px;
+          margin: 0 auto;
+          font-weight: 500;
         }
       `}</style>
     </div>
