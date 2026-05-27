@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: hintro-mock-backend
+    env: node
+    plan: free
+    rootDir: mock-server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
